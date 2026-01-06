@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useDiscussionAuth } from "@/contexts/DiscussionAuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { UserAvatar } from "./UserAvatar";
+import { UserBadges } from "./UserBadges";
 import { ImageUpload } from "./ImageUpload";
 import { GifPickerButton } from "./GifPickerButton";
 import { EmojiPickerButton } from "./EmojiPicker";
@@ -235,11 +236,14 @@ export const CommentThread = ({ postId }: CommentThreadProps) => {
             
             <div className="flex-1">
               <div className="flex items-center gap-2 text-sm">
-                <span 
-                  className="font-medium hover:text-primary cursor-pointer"
-                  onClick={() => navigate(`/p/${comment.profile?.username}`)}
-                >
-                  @{comment.profile?.username}
+                <span className="flex items-center gap-1">
+                  {comment.profile?.username && <UserBadges username={comment.profile.username} size={12} />}
+                  <span 
+                    className="font-medium hover:text-primary cursor-pointer"
+                    onClick={() => navigate(`/p/${comment.profile?.username}`)}
+                  >
+                    @{comment.profile?.username}
+                  </span>
                 </span>
                 <span className="text-muted-foreground">
                   {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}

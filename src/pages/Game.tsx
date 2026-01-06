@@ -5,13 +5,16 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { ArrowLeft, ArrowRight, CheckCircle2, XCircle, Award, Sparkles, Home, RotateCcw } from "lucide-react";
+import { ArrowLeft, ArrowRight, CheckCircle2, XCircle, Award, Sparkles, Home, RotateCcw, Trophy } from "lucide-react";
 import { biologyQuestions, Question } from "@/data/biologyQuestions.data";
 import { gradeAnswer, GradeResult } from "@/utils/answerGrading.utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useDiscussionAuth } from "@/contexts/DiscussionAuthContext";
 import { toast } from "@/hooks/use-toast";
 import { motion, AnimatePresence } from "framer-motion";
+
+const QUIZ_SIZE = 3;
+const SOLVED_KEY = "quiz_solved_questions";
 
 interface QuizState {
   currentIndex: number;
@@ -33,6 +36,21 @@ function shuffleArray<T>(array: T[]): T[] {
     [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
   }
   return shuffled;
+}
+
+// Get solved question IDs from localStorage
+function getSolvedQuestionIds(): number[] {
+  try {
+    const stored = localStorage.getItem(SOLVED_KEY);
+    return stored ? JSON.parse(stored) : [];
+  } catch {
+    return [];
+  }
+}
+
+// Save solved question IDs to localStorage
+function saveSolvedQuestionIds(ids: number[]): void {
+  localStorage.setItem(SOLVED_KEY, JSON.stringify(ids));
 }
 
 // Highlight matched keywords in user's answer
@@ -66,6 +84,7 @@ export default function Game() {
   const navigate = useNavigate();
   const { profile, refreshProfile } = useDiscussionAuth();
   const [questions, setQuestions] = useState<Question[]>([]);
+  const [allSolved, setAllSolved] = useState(false);
   const [state, setState] = useState<QuizState>({
     currentIndex: 0,
     answers: {},
@@ -75,9 +94,18 @@ export default function Game() {
   const [currentAnswer, setCurrentAnswer] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Initialize with shuffled questions
+  // Initialize with shuffled unsolved questions
   useEffect(() => {
-    setQuestions(shuffleArray(biologyQuestions).slice(0, 5)); // 5 random questions
+    const solvedIds = getSolvedQuestionIds();
+    const unsolvedQuestions = biologyQuestions.filter(q => !solvedIds.includes(q.id));
+    
+    if (unsolvedQuestions.length === 0) {
+      setAllSolved(true);
+      return;
+    }
+    
+    const shuffled = shuffleArray(unsolvedQuestions);
+    setQuestions(shuffled.slice(0, Math.min(QUIZ_SIZE, shuffled.length)));
   }, []);
 
   const currentQuestion = questions[state.currentIndex];
@@ -128,6 +156,11 @@ export default function Game() {
     }));
     
     if (isLast) {
+      // Mark questions as solved in localStorage
+      const solvedIds = getSolvedQuestionIds();
+      const newSolvedIds = [...new Set([...solvedIds, ...questions.map(q => q.id)])];
+      saveSolvedQuestionIds(newSolvedIds);
+      
       // Calculate total XP and save to database
       const totalXP = Object.values(newResults).reduce((sum, r) => sum + r.earnedXP, 0);
       
@@ -156,7 +189,16 @@ export default function Game() {
   };
 
   const restartQuiz = () => {
-    setQuestions(shuffleArray(biologyQuestions).slice(0, 5));
+    const solvedIds = getSolvedQuestionIds();
+    const unsolvedQuestions = biologyQuestions.filter(q => !solvedIds.includes(q.id));
+    
+    if (unsolvedQuestions.length === 0) {
+      setAllSolved(true);
+      return;
+    }
+    
+    const shuffled = shuffleArray(unsolvedQuestions);
+    setQuestions(shuffled.slice(0, Math.min(QUIZ_SIZE, shuffled.length)));
     setState({
       currentIndex: 0,
       answers: {},
@@ -169,6 +211,29 @@ export default function Game() {
   const totalXP = Object.values(state.results).reduce((sum, r) => sum + r.earnedXP, 0);
   const totalMarks = Object.values(state.results).reduce((sum, r) => sum + r.matchedPoints, 0);
   const maxMarks = Object.values(state.results).reduce((sum, r) => sum + r.totalPoints, 0);
+
+  // All questions solved state
+  if (allSolved) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <Card className="max-w-md w-full">
+          <CardContent className="py-12 text-center">
+            <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-primary/20 mb-4">
+              <Trophy className="w-10 h-10 text-primary" />
+            </div>
+            <h1 className="text-2xl font-bold mb-2">Congratulations!</h1>
+            <p className="text-muted-foreground mb-6">
+              You've solved all questions in the question bank! Check back later for new questions.
+            </p>
+            <Button onClick={() => navigate("/")}>
+              <Home className="w-4 h-4 mr-2" />
+              Go Home
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   if (questions.length === 0) {
     return (

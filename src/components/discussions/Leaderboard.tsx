@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { UserAvatar } from "./UserAvatar";
+import { UserBadges } from "./UserBadges";
 import { KawaiiMascot } from "./KawaiiMascot";
 import { Trophy, Medal, Award, Sparkles } from "lucide-react";
 
@@ -111,7 +112,10 @@ export const Leaderboard = () => {
                 <p className="font-medium truncate">
                   {user.display_name || user.username}
                 </p>
-                <p className="text-sm text-muted-foreground">@{user.username}</p>
+                <p className="text-sm text-muted-foreground flex items-center gap-1">
+                  <UserBadges username={user.username} size={12} />
+                  @{user.username}
+                </p>
               </div>
 
               {index < 3 && (

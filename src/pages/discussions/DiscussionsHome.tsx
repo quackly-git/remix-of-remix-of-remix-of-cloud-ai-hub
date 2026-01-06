@@ -15,7 +15,6 @@ import { UniversitySelector } from "@/components/discussions/UniversitySelector"
 import { CreateDiscussionModal } from "@/components/discussions/CreateDiscussionModal";
 import { PostSearch } from "@/components/discussions/PostSearch";
 import { DiscussionTypeSelector } from "@/components/discussions/DiscussionTypeSelector";
-import QuizWidget from "@/components/discussions/QuizWidget";
 import { MessageSquare, Plus, Clock, User, Trophy, FileText, GraduationCap, Search, Users } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { useNavigate, Link } from "react-router-dom";
@@ -154,132 +153,122 @@ const DiscussionsHome = () => {
         />
       )}
 
-      {/* Quiz Widget */}
-      <div className="grid md:grid-cols-3 gap-4">
-        <div className="md:col-span-2">
-          {/* Quick Actions */}
-          <div className="flex flex-wrap gap-2 items-center justify-between mb-4">
-            <h2 className="text-2xl font-bold flex items-center gap-2">
-              <MessageSquare className="h-6 w-6" />
-              Discussions
-            </h2>
-            <div className="flex flex-wrap gap-2">
-              <Button variant="outline" size="sm" onClick={() => setShowSearch(true)}>
-                <Search className="h-4 w-4 mr-1" />
-                Search
-              </Button>
-              <Button variant="outline" size="sm" asChild>
-                <Link to="/discussions/leaderboard">
-                  <Trophy className="h-4 w-4 mr-1" />
-                  Leaderboard
-                </Link>
-              </Button>
-            </div>
+      {/* Quick Actions */}
+      <div className="flex flex-wrap gap-2 items-center justify-between mb-4">
+        <h2 className="text-2xl font-bold flex items-center gap-2">
+          <MessageSquare className="h-6 w-6" />
+          Discussions
+        </h2>
+        <div className="flex flex-wrap gap-2">
+          <Button variant="outline" size="sm" onClick={() => setShowSearch(true)}>
+            <Search className="h-4 w-4 mr-1" />
+            Search
+          </Button>
+          <Button variant="outline" size="sm" asChild>
+            <Link to="/discussions/leaderboard">
+              <Trophy className="h-4 w-4 mr-1" />
+              Leaderboard
+            </Link>
+          </Button>
+        </div>
+      </div>
+
+      <div className="flex flex-wrap gap-2 mb-4">
+        <PaperSelector />
+        <Button variant="outline" size="sm" onClick={() => setShowUniversitySelector(true)}>
+          <GraduationCap className="h-4 w-4 mr-1" />
+          Universities
+        </Button>
+        <Button variant="outline" size="sm" onClick={() => setShowCreateDiscussion(true)}>
+          <Users className="h-4 w-4 mr-1" />
+          Create Discussion
+        </Button>
+        <Button variant="outline" size="sm" asChild>
+          <Link to="/discussions/drafts">
+            <FileText className="h-4 w-4 mr-1" />
+            Drafts
+          </Link>
+        </Button>
+        <Button size="sm" onClick={() => setShowNewPostModal(true)}>
+          <Plus className="mr-1 h-4 w-4" />
+          New Post
+        </Button>
+      </div>
+
+      {/* Recent Custom Discussions */}
+      {customDiscussions.length > 0 && (
+        <div className="mb-4">
+          <h3 className="text-sm font-medium mb-2">Community Discussions</h3>
+          <div className="flex flex-wrap gap-2">
+            {customDiscussions.map(d => (
+              <Badge
+                key={d.id}
+                variant="secondary"
+                className="cursor-pointer hover:bg-primary/20"
+                onClick={() => navigate(`/discussion/${d.slug}`)}
+              >
+                <Users className="h-3 w-3 mr-1" />
+                {d.name}
+              </Badge>
+            ))}
           </div>
+        </div>
+      )}
 
-          <div className="flex flex-wrap gap-2 mb-4">
-            <PaperSelector />
-            <Button variant="outline" size="sm" onClick={() => setShowUniversitySelector(true)}>
-              <GraduationCap className="h-4 w-4 mr-1" />
-              Universities
-            </Button>
-            <Button variant="outline" size="sm" onClick={() => setShowCreateDiscussion(true)}>
-              <Users className="h-4 w-4 mr-1" />
-              Create Discussion
-            </Button>
-            <Button variant="outline" size="sm" asChild>
-              <Link to="/discussions/drafts">
-                <FileText className="h-4 w-4 mr-1" />
-                Drafts
-              </Link>
-            </Button>
-            <Button size="sm" onClick={() => setShowNewPostModal(true)}>
-              <Plus className="mr-1 h-4 w-4" />
-              New Post
-            </Button>
-          </div>
-
-          {/* Recent Custom Discussions */}
-          {customDiscussions.length > 0 && (
-            <div className="mb-4">
-              <h3 className="text-sm font-medium mb-2">Community Discussions</h3>
-              <div className="flex flex-wrap gap-2">
-                {customDiscussions.map(d => (
-                  <Badge
-                    key={d.id}
-                    variant="secondary"
-                    className="cursor-pointer hover:bg-primary/20"
-                    onClick={() => navigate(`/discussion/${d.slug}`)}
-                  >
-                    <Users className="h-3 w-3 mr-1" />
-                    {d.name}
-                  </Badge>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Recent Posts */}
-          <h3 className="text-sm font-medium mb-2">Recent Posts</h3>
-          <div className="space-y-3">
-            {recentPosts.length === 0 ? (
-              <Card>
-                <CardContent className="flex flex-col items-center py-8">
-                  <KawaiiMascot character="cat" mood="sad" size={80} />
-                  <p className="mt-3 text-muted-foreground text-sm">No posts yet. Start one!</p>
-                </CardContent>
-              </Card>
-            ) : (
-              recentPosts.map((post) => (
-                <Card 
-                  key={post.id} 
-                  className="hover:border-primary/30 transition-colors cursor-pointer"
-                  onClick={() => navigate(getPostLink(post))}
-                >
-                  <CardContent className="p-3">
-                    <div className="flex gap-3">
-                      <UserAvatar
-                        username={post.profile?.username}
-                        displayName={post.profile?.display_name}
-                        avatarUrl={post.profile?.avatar_url}
-                        avatarType={post.profile?.avatar_type as any}
-                        avatarEmoji={post.profile?.avatar_emoji}
-                        avatarKawaii={post.profile?.avatar_kawaii}
-                        size="sm"
-                      />
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          {post.discussion_type && (
-                            <Badge variant="outline" className="text-xs">
-                              {post.discussion_type === 'university' ? '🎓' : 
-                               post.discussion_type === 'custom' ? '👥' : '📝'}
-                            </Badge>
-                          )}
-                          <h3 className="font-medium text-sm truncate">{post.title}</h3>
-                        </div>
-                        <p className="text-xs text-muted-foreground line-clamp-1 mt-1">
-                          {post.content}
-                        </p>
-                        <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
-                          <span>@{post.profile?.username}</span>
-                          <span className="flex items-center gap-1">
-                            <Clock className="h-3 w-3" />
-                            {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
-                          </span>
-                        </div>
-                      </div>
+      {/* Recent Posts */}
+      <h3 className="text-sm font-medium mb-2">Recent Posts</h3>
+      <div className="space-y-3">
+        {recentPosts.length === 0 ? (
+          <Card>
+            <CardContent className="flex flex-col items-center py-8">
+              <KawaiiMascot character="cat" mood="sad" size={80} />
+              <p className="mt-3 text-muted-foreground text-sm">No posts yet. Start one!</p>
+            </CardContent>
+          </Card>
+        ) : (
+          recentPosts.map((post) => (
+            <Card 
+              key={post.id} 
+              className="hover:border-primary/30 transition-colors cursor-pointer"
+              onClick={() => navigate(getPostLink(post))}
+            >
+              <CardContent className="p-3">
+                <div className="flex gap-3">
+                  <UserAvatar
+                    username={post.profile?.username}
+                    displayName={post.profile?.display_name}
+                    avatarUrl={post.profile?.avatar_url}
+                    avatarType={post.profile?.avatar_type as any}
+                    avatarEmoji={post.profile?.avatar_emoji}
+                    avatarKawaii={post.profile?.avatar_kawaii}
+                    size="sm"
+                  />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      {post.discussion_type && (
+                        <Badge variant="outline" className="text-xs">
+                          {post.discussion_type === 'university' ? '🎓' : 
+                           post.discussion_type === 'custom' ? '👥' : '📝'}
+                        </Badge>
+                      )}
+                      <h3 className="font-medium text-sm truncate">{post.title}</h3>
                     </div>
-                  </CardContent>
-                </Card>
-              ))
-            )}
-          </div>
-        </div>
-
-        {/* Quiz Widget Sidebar */}
-        <div className="md:col-span-1">
-          <QuizWidget />
-        </div>
+                    <p className="text-xs text-muted-foreground line-clamp-1 mt-1">
+                      {post.content}
+                    </p>
+                    <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
+                      <span>@{post.profile?.username}</span>
+                      <span className="flex items-center gap-1">
+                        <Clock className="h-3 w-3" />
+                        {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))
+        )}
       </div>
 
       {/* Full Post Composer Modal */}

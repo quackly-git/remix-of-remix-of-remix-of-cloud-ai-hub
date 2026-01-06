@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { UserAvatar } from "./UserAvatar";
+import { UserBadges } from "./UserBadges";
 import { supabase } from "@/integrations/supabase/client";
 import { useDiscussionAuth } from "@/contexts/DiscussionAuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -307,14 +308,17 @@ export const PostCard = ({
                     avatarKawaii={post.profile?.avatar_kawaii}
                     size="xs"
                   />
-                  <span 
-                    className="hover:text-primary cursor-pointer"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      navigate(`/p/${post.profile?.username}`);
-                    }}
-                  >
-                    @{post.profile?.username}
+                  <span className="flex items-center gap-1">
+                    {post.profile?.username && <UserBadges username={post.profile.username} size={12} />}
+                    <span 
+                      className="hover:text-primary cursor-pointer"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigate(`/p/${post.profile?.username}`);
+                      }}
+                    >
+                      @{post.profile?.username}
+                    </span>
                   </span>
                 </div>
                 <span className="flex items-center gap-1">
