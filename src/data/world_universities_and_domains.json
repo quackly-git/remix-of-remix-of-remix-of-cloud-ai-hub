@@ -1,0 +1,50 @@
+[
+  {
+    "name": "Engineering Institute of Technology",
+    "domains": ["student.eit.edu.au"],
+    "web_pages": ["https://www.eit.edu.au/"],
+    "country": "Australia",
+    "alpha_two_code": "AU",
+    "state-province": null
+  },
+  {
+    "name": "Universitas Nusa Putra",
+    "domains": ["nusaputra.ac.id"],
+    "web_pages": ["https://nusaputra.ac.id"],
+    "country": "Indonesia",
+    "alpha_two_code": "ID",
+    "state-province": null
+  },
+  {
+    "name": "Regent University College of Science and Technology",
+    "domains": ["regent.edu.gh"],
+    "web_pages": ["https://regent.edu.gh"],
+    "country": "Ghana",
+    "alpha_two_code": "GH",
+    "state-province": null
+  },
+  {
+    "name": "Wroclaw Akademia Biznesu",
+    "domains": ["student.wab.edu.pl", "wab.edu.pl"],
+    "web_pages": ["https://wab.edu.pl"],
+    "country": "Poland",
+    "alpha_two_code": "PL",
+    "state-province": null
+  },
+  {
+    "name": "Atharva College of Engineering",
+    "domains": ["atharvacoe.ac.in"],
+    "web_pages": ["https://atharvacoe.ac.in"],
+    "country": "India",
+    "alpha_two_code": "IN",
+    "state-province": "Mumbai"
+  },
+  {
+    "name": "Toronto Baptist Seminary and Bible College",
+    "domains": ["tbs.edu"],
+    "web_pages": ["https://tbs.edu"],
+    "country": "Canada",
+    "alpha_two_code": "CA",
+    "state-province": "Ontario"
+  }
+]
