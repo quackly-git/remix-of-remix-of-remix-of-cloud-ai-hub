@@ -1,5 +1,6 @@
 import { Leaderboard } from "@/components/discussions/Leaderboard";
 import { KawaiiMascot } from "@/components/discussions/KawaiiMascot";
+import QuizWidget from "@/components/discussions/QuizWidget";
 
 const DiscussionsLeaderboard = () => {
   return (
@@ -15,6 +16,11 @@ const DiscussionsLeaderboard = () => {
       </div>
 
       <Leaderboard />
+
+      {/* Boost XP Widget */}
+      <div className="max-w-sm mx-auto">
+        <QuizWidget />
+      </div>
     </div>
   );
 };

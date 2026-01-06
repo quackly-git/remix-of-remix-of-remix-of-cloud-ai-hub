@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useDiscussionAuth, UserProfile } from "@/contexts/DiscussionAuthContext";
 import { KawaiiMascot } from "@/components/discussions/KawaiiMascot";
 import { UserAvatar } from "@/components/discussions/UserAvatar";
+import { UserBadges } from "@/components/discussions/UserBadges";
 import { UserSubjectsDisplay } from "@/components/discussions/SubjectSelector";
 import { FollowButton } from "@/components/discussions/FollowButton";
 import { FollowListModal } from "@/components/discussions/FollowListModal";
@@ -222,7 +223,10 @@ const PublicProfile = () => {
                     </span>
                   )}
                 </div>
-                <p className="text-muted-foreground">@{profile.username}</p>
+                <p className="text-muted-foreground flex items-center gap-1">
+                  <UserBadges username={profile.username} size={14} />
+                  @{profile.username}
+                </p>
 
                 {canViewProfile && profile.bio && (
                   <p className="mt-2 text-sm">{profile.bio}</p>
