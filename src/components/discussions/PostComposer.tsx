@@ -310,13 +310,14 @@ export const PostComposer = ({
                     <SelectValue placeholder="Select a community discussion..." />
                   </SelectTrigger>
                   <SelectContent>
-                    {customDiscussions.map(d => (
-                      <SelectItem key={d.id} value={d.slug}>
-                        {d.name}
-                      </SelectItem>
-                    ))}
-                    {customDiscussions.length === 0 && (
-                      <SelectItem value="" disabled>No discussions yet</SelectItem>
+                    {customDiscussions.length === 0 ? (
+                      <div className="py-2 px-3 text-sm text-muted-foreground">No discussions yet</div>
+                    ) : (
+                      customDiscussions.map(d => (
+                        <SelectItem key={d.id} value={d.slug}>
+                          {d.name}
+                        </SelectItem>
+                      ))
                     )}
                   </SelectContent>
                 </Select>
