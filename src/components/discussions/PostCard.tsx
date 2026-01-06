@@ -1,4 +1,5 @@
 import { useState } from "react";
+import "flag-icons/css/flag-icons.min.css";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -66,18 +67,36 @@ interface PostCardProps {
   showActions?: boolean;
 }
 
-// Helper to get paper info display
-const getPaperInfoDisplay = (discussionId: string | null | undefined, discussionType: string | null | undefined) => {
-  if (discussionType !== 'paper' || !discussionId) return null;
+// Helper to get discussion display info
+const getDiscussionDisplay = (discussionId: string | null | undefined, discussionType: string | null | undefined) => {
+  if (!discussionType || !discussionId) return null;
   
-  // Parse discussionId like "2024-june" or "2023-jan"
-  const match = discussionId.match(/^(\d{4})-(\w+)$/);
-  if (match) {
-    const year = match[1];
-    const session = match[2].charAt(0).toUpperCase() + match[2].slice(1);
-    return `${year} ${session}`;
+  if (discussionType === 'paper') {
+    // Parse discussionId like "2024-june" or "2023-jan"
+    const match = discussionId.match(/^(\d{4})-(\w+)$/);
+    if (match) {
+      const year = match[1];
+      const session = match[2].charAt(0).toUpperCase() + match[2].slice(1);
+      return { type: 'paper', label: `${year} ${session}`, icon: '📝' };
+    }
+    return { type: 'paper', label: discussionId, icon: '📝' };
   }
-  return discussionId;
+  
+  if (discussionType === 'university') {
+    // discussionId is like "gb-university-of-cambridge"
+    const parts = discussionId.split('-');
+    const countryCode = parts[0]?.toUpperCase() || '';
+    const name = parts.slice(1).join(' ').replace(/\b\w/g, c => c.toUpperCase());
+    return { type: 'university', label: name, countryCode, icon: '🎓' };
+  }
+  
+  if (discussionType === 'custom') {
+    // discussionId is the slug - format it nicely
+    const name = discussionId.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+    return { type: 'custom', label: name, icon: '👥' };
+  }
+  
+  return null;
 };
 
 export const PostCard = ({ 
@@ -180,22 +199,40 @@ export const PostCard = ({
               <div className="flex items-start justify-between gap-2">
               <div className="flex-1">
                   <div className="flex items-center gap-2 flex-wrap">
-                    {/* Paper info badge */}
-                    {getPaperInfoDisplay(post.discussion_id, post.discussion_type) && (
-                      <Badge variant="default" className="text-xs">
-                        📝 {getPaperInfoDisplay(post.discussion_id, post.discussion_type)}
-                      </Badge>
-                    )}
-                    {post.discussion_type === 'university' && (
-                      <Badge variant="secondary" className="text-xs">
-                        🎓 University
-                      </Badge>
-                    )}
-                    {post.discussion_type === 'custom' && (
-                      <Badge variant="outline" className="text-xs">
-                        👥 Community
-                      </Badge>
-                    )}
+                    {/* Discussion info badge */}
+                    {(() => {
+                      const displayInfo = getDiscussionDisplay(post.discussion_id, post.discussion_type);
+                      if (!displayInfo) return null;
+                      
+                      if (displayInfo.type === 'paper') {
+                        return (
+                          <Badge variant="default" className="text-xs">
+                            {displayInfo.icon} {displayInfo.label}
+                          </Badge>
+                        );
+                      }
+                      
+                      if (displayInfo.type === 'university') {
+                        return (
+                          <Badge variant="secondary" className="text-xs flex items-center gap-1">
+                            {displayInfo.countryCode && (
+                              <span className={`fi fi-${displayInfo.countryCode.toLowerCase()}`} />
+                            )}
+                            {displayInfo.label}
+                          </Badge>
+                        );
+                      }
+                      
+                      if (displayInfo.type === 'custom') {
+                        return (
+                          <Badge variant="outline" className="text-xs">
+                            {displayInfo.icon} {displayInfo.label}
+                          </Badge>
+                        );
+                      }
+                      
+                      return null;
+                    })()}
                     {post.question_number && (
                       <Badge variant="secondary" className="text-xs">
                         Q{post.question_number}
