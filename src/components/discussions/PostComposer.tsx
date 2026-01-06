@@ -14,7 +14,12 @@ import { ImageUpload } from "./ImageUpload";
 import { GifPickerButton } from "./GifPickerButton";
 import { EmojiPickerButton } from "./EmojiPicker";
 import { pp_data } from "@/data/pp_data";
-import { Send, Save, X, Tag, Plus, FileText, GraduationCap, Users } from "lucide-react";
+import { Send, Save, X, Tag, Plus, FileText, GraduationCap, Users, Search, Globe } from "lucide-react";
+import universitiesData from "@/data/world_universities_and_domains.json";
+import type { University } from "@/types/university";
+import { ScrollArea } from "@/components/ui/scroll-area";
+
+const universities = universitiesData as University[];
 
 interface Tag {
   id: string;
@@ -70,9 +75,28 @@ export const PostComposer = ({
   const [mascotMood, setMascotMood] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   
   // Discussion selection state
-  const [selectedDiscussionType, setSelectedDiscussionType] = useState(discussionType || 'general');
+  const [selectedDiscussionType, setSelectedDiscussionType] = useState(discussionType || 'paper');
   const [selectedDiscussionId, setSelectedDiscussionId] = useState(discussionId || '');
   const [customDiscussions, setCustomDiscussions] = useState<CustomDiscussion[]>([]);
+  
+  // University selection state
+  const [countrySearch, setCountrySearch] = useState("");
+  const [selectedCountry, setSelectedCountry] = useState("");
+  const [uniSearch, setUniSearch] = useState("");
+  
+  // Get unique countries
+  const countries = [...new Set(universities.map(u => u.country))].sort();
+  const filteredCountries = countries.filter(c => 
+    c.toLowerCase().includes(countrySearch.toLowerCase())
+  );
+  
+  // Get universities for selected country
+  const filteredUniversities = selectedCountry 
+    ? universities
+        .filter(u => u.country === selectedCountry)
+        .filter(u => u.name.toLowerCase().includes(uniSearch.toLowerCase()))
+        .slice(0, 50)
+    : [];
 
   // Get standard papers for dropdown
   const standardPapers = pp_data.filter(p => p.id && p.year && p.season);
@@ -123,8 +147,11 @@ export const PostComposer = ({
     setNewTagName("");
     setShowNewTag(false);
     setMascotMood('idle');
-    setSelectedDiscussionType(discussionType || 'general');
+    setSelectedDiscussionType(discussionType || 'paper');
     setSelectedDiscussionId(discussionId || '');
+    setCountrySearch("");
+    setSelectedCountry("");
+    setUniSearch("");
   };
 
   const handleAddTag = async () => {
@@ -258,19 +285,20 @@ export const PostComposer = ({
               </Label>
               <div className="flex gap-2 flex-wrap">
                 <Badge 
-                  variant={selectedDiscussionType === 'general' ? 'default' : 'outline'} 
-                  className="cursor-pointer"
-                  onClick={() => { setSelectedDiscussionType('general'); setSelectedDiscussionId(''); }}
-                >
-                  📝 General
-                </Badge>
-                <Badge 
                   variant={selectedDiscussionType === 'paper' ? 'default' : 'outline'} 
                   className="cursor-pointer"
                   onClick={() => setSelectedDiscussionType('paper')}
                 >
                   <FileText className="h-3 w-3 mr-1" />
                   Past Paper
+                </Badge>
+                <Badge 
+                  variant={selectedDiscussionType === 'university' ? 'default' : 'outline'} 
+                  className="cursor-pointer"
+                  onClick={() => setSelectedDiscussionType('university')}
+                >
+                  <GraduationCap className="h-3 w-3 mr-1" />
+                  University
                 </Badge>
                 <Badge 
                   variant={selectedDiscussionType === 'custom' ? 'default' : 'outline'} 
@@ -322,6 +350,90 @@ export const PostComposer = ({
                   </SelectContent>
                 </Select>
               )}
+              
+              {/* University Selection */}
+              {selectedDiscussionType === 'university' && (
+                <div className="space-y-2">
+                  {!selectedCountry ? (
+                    <>
+                      <div className="relative">
+                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          value={countrySearch}
+                          onChange={(e) => setCountrySearch(e.target.value)}
+                          placeholder="Search country..."
+                          className="pl-10"
+                        />
+                      </div>
+                      <ScrollArea className="h-40 border rounded-md">
+                        <div className="p-2 space-y-1">
+                          {filteredCountries.slice(0, 30).map(country => (
+                            <button
+                              key={country}
+                              type="button"
+                              onClick={() => setSelectedCountry(country)}
+                              className="w-full text-left px-3 py-2 rounded-md hover:bg-accent transition-colors flex items-center gap-2 text-sm"
+                            >
+                              <Globe className="h-4 w-4 text-muted-foreground" />
+                              {country}
+                            </button>
+                          ))}
+                        </div>
+                      </ScrollArea>
+                    </>
+                  ) : (
+                    <>
+                      <div className="flex items-center gap-2">
+                        <Badge variant="secondary" className="flex items-center gap-1">
+                          <Globe className="h-3 w-3" />
+                          {selectedCountry}
+                        </Badge>
+                        <Button 
+                          type="button" 
+                          variant="ghost" 
+                          size="sm" 
+                          onClick={() => {
+                            setSelectedCountry("");
+                            setSelectedDiscussionId("");
+                          }}
+                        >
+                          Change
+                        </Button>
+                      </div>
+                      <div className="relative">
+                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          value={uniSearch}
+                          onChange={(e) => setUniSearch(e.target.value)}
+                          placeholder="Search university..."
+                          className="pl-10"
+                        />
+                      </div>
+                      <ScrollArea className="h-40 border rounded-md">
+                        <div className="p-2 space-y-1">
+                          {filteredUniversities.map((uni, idx) => {
+                            const slug = `${uni.alpha_two_code.toLowerCase()}-${uni.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').substring(0, 50)}`;
+                            return (
+                              <button
+                                key={`${uni.name}-${idx}`}
+                                type="button"
+                                onClick={() => setSelectedDiscussionId(slug)}
+                                className={`w-full text-left px-3 py-2 rounded-md hover:bg-accent transition-colors text-sm
+                                  ${selectedDiscussionId === slug ? 'bg-primary/10 border border-primary' : ''}`}
+                              >
+                                <div className="font-medium">{uni.name}</div>
+                                {uni["state-province"] && (
+                                  <div className="text-xs text-muted-foreground">{uni["state-province"]}</div>
+                                )}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </ScrollArea>
+                    </>
+                  )}
+                </div>
+              )}
             </div>
           )}
 
@@ -335,21 +447,23 @@ export const PostComposer = ({
             />
           </div>
 
-          {/* Question Number */}
-          <div className="space-y-2">
-            <Label>Question Number (optional)</Label>
-            <Select value={questionNumber || "none"} onValueChange={(val) => setQuestionNumber(val === "none" ? "" : val)}>
-              <SelectTrigger className="w-40">
-                <SelectValue placeholder="Select Q#" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">None</SelectItem>
-                {[1, 2, 3, 4, 5, 6, 7, 8].map(num => (
-                  <SelectItem key={num} value={num.toString()}>Q{num}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          {/* Question Number - only for paper type */}
+          {selectedDiscussionType === 'paper' && (
+            <div className="space-y-2">
+              <Label>Question Number (optional)</Label>
+              <Select value={questionNumber || "none"} onValueChange={(val) => setQuestionNumber(val === "none" ? "" : val)}>
+                <SelectTrigger className="w-40">
+                  <SelectValue placeholder="Select Q#" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">None</SelectItem>
+                  {[1, 2, 3, 4, 5, 6, 7, 8].map(num => (
+                    <SelectItem key={num} value={num.toString()}>Q{num}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
 
           {/* Content */}
           <div className="space-y-2">

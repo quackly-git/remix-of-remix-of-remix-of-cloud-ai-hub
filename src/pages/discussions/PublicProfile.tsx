@@ -1,7 +1,10 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import "flag-icons/css/flag-icons.min.css";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { supabase } from "@/integrations/supabase/client";
 import { useDiscussionAuth, UserProfile } from "@/contexts/DiscussionAuthContext";
 import { KawaiiMascot } from "@/components/discussions/KawaiiMascot";
@@ -17,7 +20,10 @@ import {
   Users, 
   FileText, 
   Settings,
-  Sparkles
+  Sparkles,
+  GraduationCap,
+  HelpCircle,
+  ClipboardCheck
 } from "lucide-react";
 
 interface UserSubject {
@@ -27,6 +33,14 @@ interface UserSubject {
   level: string;
 }
 
+interface UserUniversity {
+  id: string;
+  university_name: string;
+  country: string;
+  alpha_two_code: string;
+  state_province: string | null;
+}
+
 const PublicProfile = () => {
   const { username } = useParams<{ username: string }>();
   const navigate = useNavigate();
@@ -34,8 +48,10 @@ const PublicProfile = () => {
 
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [subjects, setSubjects] = useState<UserSubject[]>([]);
+  const [universities, setUniversities] = useState<UserUniversity[]>([]);
   const [followersCount, setFollowersCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
+  const [quizzesSolved, setQuizzesSolved] = useState(0);
   const [loading, setLoading] = useState(true);
   const [canViewProfile, setCanViewProfile] = useState(false);
   const [showFollowList, setShowFollowList] = useState(false);
@@ -88,7 +104,7 @@ const PublicProfile = () => {
 
     setCanViewProfile(canView);
 
-    // Fetch subjects
+    // Fetch subjects and universities
     if (canView) {
       const { data: subjectsData } = await supabase
         .from('user_subjects')
@@ -98,6 +114,27 @@ const PublicProfile = () => {
       if (subjectsData) {
         setSubjects(subjectsData);
       }
+
+      const { data: universitiesData } = await supabase
+        .from('user_universities')
+        .select('*')
+        .eq('user_id', profileData.user_id);
+      
+      if (universitiesData) {
+        setUniversities(universitiesData);
+      }
+    }
+
+    // Get quiz questions solved from localStorage (this is stored locally)
+    const solvedKey = 'quiz_solved_questions';
+    try {
+      const stored = localStorage.getItem(solvedKey);
+      if (stored && isOwn) {
+        const solvedIds = JSON.parse(stored);
+        setQuizzesSolved(Array.isArray(solvedIds) ? solvedIds.length : 0);
+      }
+    } catch {
+      setQuizzesSolved(0);
     }
 
     // Fetch follow counts
@@ -213,10 +250,28 @@ const PublicProfile = () => {
                         <p className="font-bold text-primary">{profile.xp}</p>
                         <p className="text-xs text-muted-foreground">XP</p>
                       </div>
-                      <div className="text-center">
-                        <p className="font-bold">{profile.papers_solved}</p>
-                        <p className="text-xs text-muted-foreground">Papers</p>
-                      </div>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <div className="text-center cursor-help flex items-center gap-1">
+                              <div>
+                                <p className="font-bold">{profile.papers_solved}</p>
+                                <p className="text-xs text-muted-foreground">Papers</p>
+                              </div>
+                              <HelpCircle className="h-3 w-3 text-muted-foreground" />
+                            </div>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p className="text-xs">You need to log marks to save your solved past papers</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                      {isOwnProfile && (
+                        <div className="text-center">
+                          <p className="font-bold">{quizzesSolved}</p>
+                          <p className="text-xs text-muted-foreground">Quizzes</p>
+                        </div>
+                      )}
                     </>
                   )}
                 </div>
@@ -266,6 +321,19 @@ const PublicProfile = () => {
           </Card>
         )}
 
+        {/* Bio Card */}
+        {canViewProfile && profile.bio && (
+          <Card className="mt-6">
+            <CardContent className="pt-6">
+              <h3 className="font-semibold flex items-center gap-2 mb-3">
+                <Users className="h-4 w-4" />
+                About
+              </h3>
+              <p className="text-sm text-muted-foreground">{profile.bio}</p>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Subjects */}
         {canViewProfile && subjects.length > 0 && (
           <Card className="mt-6">
@@ -275,6 +343,29 @@ const PublicProfile = () => {
                 Subjects
               </h3>
               <UserSubjectsDisplay subjects={subjects} />
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Universities */}
+        {canViewProfile && universities.length > 0 && (
+          <Card className="mt-6">
+            <CardContent className="pt-6">
+              <h3 className="font-semibold flex items-center gap-2 mb-4">
+                <GraduationCap className="h-4 w-4" />
+                Universities
+              </h3>
+              <div className="flex flex-wrap gap-2">
+                {universities.map((uni) => (
+                  <Badge key={uni.id} variant="secondary" className="flex items-center gap-2 py-1.5 px-3">
+                    <span className={`fi fi-${uni.alpha_two_code.toLowerCase()}`} />
+                    <span>{uni.university_name}</span>
+                    {uni.state_province && (
+                      <span className="text-xs text-muted-foreground">({uni.state_province})</span>
+                    )}
+                  </Badge>
+                ))}
+              </div>
             </CardContent>
           </Card>
         )}
