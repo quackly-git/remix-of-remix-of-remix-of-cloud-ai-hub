@@ -1,12 +1,14 @@
 import React, { useState } from "react";
-import { ArrowLeft, Settings, RotateCcw, Calendar } from "lucide-react";
+import { ArrowLeft, Settings, RotateCcw, Calendar, Maximize2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { StarsBackground } from "@/components/ui/stars-background";
 import { ShootingStars } from "@/components/ui/shooting-stars";
 import { ResultsCountdownTimer } from "@/components/ResultsCountdownTimer";
+import { FullscreenResultsCountdown } from "@/components/FullscreenResultsCountdown";
 import { SessionSelectionModal } from "@/components/SessionSelectionModal";
 import { ExpectedGradesSection } from "@/components/ExpectedGradesSection";
+import { ResultsSettingsModal } from "@/components/ResultsSettingsModal";
 import { useResultsSettings, Session } from "@/hooks/useResultsSettings";
 import {
   Dialog,
@@ -17,8 +19,9 @@ import {
 } from "@/components/ui/dialog";
 
 const ResultsTimer: React.FC = () => {
-  const { settings, setSession, updatePredictions, resetToDefaults } = useResultsSettings();
+  const { settings, setSession, updatePredictions, resetToDefaults, updateDisplaySettings } = useResultsSettings();
   const [showChangeSession, setShowChangeSession] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
 
   const handleSelectSession = (session: Session) => {
     setSession(session);
@@ -29,9 +32,29 @@ const ResultsTimer: React.FC = () => {
     setShowChangeSession(false);
   };
 
+  const handleFullscreen = () => {
+    updateDisplaySettings({ isFullscreen: true });
+  };
+
+  const handleExitFullscreen = () => {
+    updateDisplaySettings({ isFullscreen: false });
+  };
+
+  // Fullscreen mode
+  if (settings.displaySettings.isFullscreen && settings.hasSelectedSession) {
+    return (
+      <FullscreenResultsCountdown
+        resultsDate={settings.resultsDate}
+        session={settings.session}
+        displaySettings={settings.displaySettings}
+        onExitFullscreen={handleExitFullscreen}
+      />
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-teal-50 to-cyan-50 dark:from-slate-950 dark:via-teal-950 dark:to-cyan-950 flex flex-col items-center justify-start py-8 px-4">
-      <StarsBackground className="pointer-events-none opacity-30" />
+    <div className="min-h-screen bg-background flex flex-col items-center justify-start py-8 px-4">
+      <StarsBackground className="pointer-events-none" />
       <ShootingStars className="pointer-events-none" />
 
       {/* Header */}
@@ -83,7 +106,7 @@ const ResultsTimer: React.FC = () => {
           )}
         </div>
 
-        <h1 className="text-3xl font-bold text-foreground text-center bg-gradient-to-r from-teal-600 to-cyan-600 bg-clip-text text-transparent">
+        <h1 className="text-3xl font-bold text-foreground text-center">
           📊 Results Day Countdown
         </h1>
       </div>
@@ -97,8 +120,36 @@ const ResultsTimer: React.FC = () => {
       {/* Main Content */}
       {settings.hasSelectedSession && settings.session && (
         <div className="w-full max-w-2xl space-y-8">
-          {/* Countdown Timer */}
-          <ResultsCountdownTimer settings={settings} />
+          {/* Timer Controls */}
+          <div className="relative w-full flex items-center justify-center">
+            <div className="absolute top-4 right-4 z-10 flex gap-2">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleFullscreen}
+                title="Fullscreen"
+              >
+                <Maximize2 className="h-5 w-5" />
+              </Button>
+              <Button size="icon" onClick={() => setShowSettings(true)}>
+                <Settings className="h-5 w-5" />
+              </Button>
+            </div>
+
+            {/* Countdown Timer */}
+            <ResultsCountdownTimer
+              resultsDate={settings.resultsDate}
+              session={settings.session}
+              displaySettings={settings.displaySettings}
+            />
+
+            <ResultsSettingsModal
+              open={showSettings}
+              onOpenChange={setShowSettings}
+              settings={settings.displaySettings}
+              updateSettings={updateDisplaySettings}
+            />
+          </div>
 
           {/* Expected Grades Section */}
           <ExpectedGradesSection

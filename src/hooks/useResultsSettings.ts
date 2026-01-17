@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { ResultsTimerDisplaySettings } from "@/components/ResultsSettingsModal";
 
 export type Session = "oct2025" | "jan2026";
 export type Subject = "Chemistry" | "Biology" | "Human Bio";
@@ -21,6 +22,7 @@ export interface ResultsSettings {
   resultsDate: Date;
   hasSelectedSession: boolean;
   predictions: SubjectPrediction[];
+  displaySettings: ResultsTimerDisplaySettings;
 }
 
 const getResultsDate = (session: Session): Date => {
@@ -30,11 +32,25 @@ const getResultsDate = (session: Session): Date => {
   return new Date(2026, 2, 5, 9, 0, 0); // 5 March 2026, 9 AM
 };
 
+const defaultDisplaySettings: ResultsTimerDisplaySettings = {
+  backgroundColor: "#14b8a6",
+  fontColor: "#ffffff",
+  fontFamily: "Sora, sans-serif",
+  fontSize: 48,
+  showDays: true,
+  showHours: true,
+  showMinutes: true,
+  showSeconds: true,
+  showProgressBar: true,
+  isFullscreen: false,
+};
+
 const defaultSettings: ResultsSettings = {
   session: null,
   resultsDate: new Date(2026, 0, 22, 9, 0, 0),
   hasSelectedSession: false,
   predictions: [],
+  displaySettings: defaultDisplaySettings,
 };
 
 export const useResultsSettings = () => {
@@ -48,7 +64,15 @@ export const useResultsSettings = () => {
         if (parsed.resultsDate) {
           parsed.resultsDate = new Date(parsed.resultsDate);
         }
-        setSettings({ ...defaultSettings, ...parsed });
+        // Merge with defaults to ensure new fields exist
+        setSettings({ 
+          ...defaultSettings, 
+          ...parsed,
+          displaySettings: {
+            ...defaultDisplaySettings,
+            ...parsed.displaySettings,
+          }
+        });
       } catch (error) {
         console.error("Failed to parse results settings:", error);
         setSettings(defaultSettings);
@@ -59,6 +83,21 @@ export const useResultsSettings = () => {
   const updateSettings = (newSettings: Partial<ResultsSettings>) => {
     setSettings((prev) => {
       const updated = { ...prev, ...newSettings };
+      const toSave = {
+        ...updated,
+        resultsDate: updated.resultsDate.toISOString(),
+      };
+      localStorage.setItem("resultsSettings", JSON.stringify(toSave));
+      return updated;
+    });
+  };
+
+  const updateDisplaySettings = (newDisplaySettings: Partial<ResultsTimerDisplaySettings>) => {
+    setSettings((prev) => {
+      const updated = {
+        ...prev,
+        displaySettings: { ...prev.displaySettings, ...newDisplaySettings },
+      };
       const toSave = {
         ...updated,
         resultsDate: updated.resultsDate.toISOString(),
@@ -89,6 +128,7 @@ export const useResultsSettings = () => {
   return {
     settings,
     updateSettings,
+    updateDisplaySettings,
     setSession,
     updatePredictions,
     resetToDefaults,
