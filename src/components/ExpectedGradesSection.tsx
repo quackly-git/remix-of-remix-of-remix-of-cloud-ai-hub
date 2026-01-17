@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
   SelectContent,
@@ -18,8 +17,6 @@ import {
   Leaf,
   Heart,
   Save,
-  Plus,
-  Trash2,
   GraduationCap,
 } from "lucide-react";
 import {
@@ -27,7 +24,6 @@ import {
   Subject,
   MarkMode,
   SubjectPrediction,
-  UnitPrediction,
   getMaxMarks,
   getLetterGrades,
 } from "@/hooks/useResultsSettings";
@@ -43,12 +39,6 @@ const subjectIcons: Record<Subject, React.ReactNode> = {
   Chemistry: <Beaker className="h-4 w-4" />,
   Biology: <Leaf className="h-4 w-4" />,
   "Human Bio": <Heart className="h-4 w-4" />,
-};
-
-const subjectColors: Record<Subject, string> = {
-  Chemistry: "bg-purple-100 text-purple-700 border-purple-300 dark:bg-purple-900/30 dark:text-purple-300",
-  Biology: "bg-emerald-100 text-emerald-700 border-emerald-300 dark:bg-emerald-900/30 dark:text-emerald-300",
-  "Human Bio": "bg-rose-100 text-rose-700 border-rose-300 dark:bg-rose-900/30 dark:text-rose-300",
 };
 
 export const ExpectedGradesSection: React.FC<ExpectedGradesSectionProps> = ({
@@ -153,10 +143,10 @@ export const ExpectedGradesSection: React.FC<ExpectedGradesSectionProps> = ({
   };
 
   return (
-    <Card className="w-full max-w-2xl border-2 border-teal-200 dark:border-teal-800 bg-gradient-to-br from-teal-50/50 to-cyan-50/50 dark:from-teal-950/20 dark:to-cyan-950/20">
+    <Card className="w-full max-w-2xl border-border">
       <CardHeader className="pb-4">
         <CardTitle className="flex items-center gap-2 text-lg">
-          <GraduationCap className="h-5 w-5 text-teal-600" />
+          <GraduationCap className="h-5 w-5" />
           Expected Grades
         </CardTitle>
       </CardHeader>
@@ -171,7 +161,7 @@ export const ExpectedGradesSection: React.FC<ExpectedGradesSectionProps> = ({
                 variant="outline"
                 className={`cursor-pointer px-3 py-2 transition-all ${
                   selectedSubjects.includes(subject)
-                    ? subjectColors[subject]
+                    ? "bg-primary text-primary-foreground border-primary"
                     : "opacity-50 hover:opacity-75"
                 }`}
                 onClick={() => toggleSubject(subject)}
@@ -187,7 +177,7 @@ export const ExpectedGradesSection: React.FC<ExpectedGradesSectionProps> = ({
         {localPredictions.map((pred) => (
           <div
             key={pred.subject}
-            className={`p-4 rounded-lg border-2 ${subjectColors[pred.subject]} space-y-4`}
+            className="p-4 rounded-lg border border-border bg-muted/50 space-y-4"
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 font-medium">
@@ -219,7 +209,7 @@ export const ExpectedGradesSection: React.FC<ExpectedGradesSectionProps> = ({
                       variant="outline"
                       className={`cursor-pointer ${
                         pred.units.some(u => u.unit === unit)
-                          ? "bg-background border-foreground"
+                          ? "bg-secondary text-secondary-foreground border-secondary"
                           : "opacity-50"
                       }`}
                       onClick={() => toggleUnit(pred.subject, unit)}
@@ -232,7 +222,7 @@ export const ExpectedGradesSection: React.FC<ExpectedGradesSectionProps> = ({
                 {/* Unit Inputs */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {pred.units.map((unit) => (
-                    <div key={unit.unit} className="flex items-center gap-2 bg-background/50 p-2 rounded">
+                    <div key={unit.unit} className="flex items-center gap-2 bg-background p-2 rounded border border-border">
                       <span className="text-sm font-medium w-12">U{unit.unit}</span>
                       <Input
                         type="number"
@@ -269,7 +259,7 @@ export const ExpectedGradesSection: React.FC<ExpectedGradesSectionProps> = ({
               </>
             ) : (
               /* Human Bio - Single total marks */
-              <div className="flex items-center gap-3 bg-background/50 p-3 rounded">
+              <div className="flex items-center gap-3 bg-background p-3 rounded border border-border">
                 <span className="text-sm font-medium">Total Marks</span>
                 <Input
                   type="number"
@@ -319,7 +309,7 @@ export const ExpectedGradesSection: React.FC<ExpectedGradesSectionProps> = ({
 
         {/* Save Button */}
         {selectedSubjects.length > 0 && (
-          <Button onClick={handleSave} className="w-full bg-teal-600 hover:bg-teal-700">
+          <Button onClick={handleSave} className="w-full">
             <Save className="h-4 w-4 mr-2" />
             Save Predictions
           </Button>
