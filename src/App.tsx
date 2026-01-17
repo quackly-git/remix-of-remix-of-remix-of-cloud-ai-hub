@@ -16,6 +16,7 @@ import ThreadDetail from "./pages/ThreadDetail";
 import NotFound from "./pages/NotFound";
 import NoOldSyllabus from "./pages/NoOldSyllabus";
 import Planner from "./pages/Timer";
+import ResultsTimer from "./pages/ResultsTimer";
 import NotesRouter from "./pages/NotesRouter";
 import { ThemeProviderer } from "./hooks/useTheme";
 import CrispChat from "./components/CrispChat";
@@ -54,6 +55,7 @@ const App = () => (
                   <Route path="/" element={<Index />} />
                   <Route path="/checklist" element={<Checklist />} />
                   <Route path="/timer" element={<Planner />} />
+                  <Route path="/timer/results" element={<ResultsTimer />} />
                   <Route path="/no-old-syllabus" element={<NoOldSyllabus />} />
                   <Route
                     path="/pastpapers-checklist"
