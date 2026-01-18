@@ -37,12 +37,20 @@ const Planner: React.FC = () => {
         {/* Header */} <StarsBackground className="pointer-events-none" />
         <ShootingStars className="pointer-events-none" />
         <div className="flex flex-col items-center gap-4 mb-8">
-          <Link to="/">
-            <Button variant="ghost" size="sm" className="flex items-center">
-              <ArrowLeft className="h-4 w-4 mr-1" />
-              Back to Home
-            </Button>
-          </Link>
+          <div className="flex items-center gap-4">
+            <Link to="/">
+              <Button variant="ghost" size="sm" className="flex items-center">
+                <ArrowLeft className="h-4 w-4 mr-1" />
+                Back to Home
+              </Button>
+            </Link>
+            <Link to="/timer/results">
+              <Button variant="outline" size="sm" className="flex items-center">
+                Results Countdown
+                <ArrowLeft className="h-4 w-4 ml-1 rotate-180" />
+              </Button>
+            </Link>
+          </div>
           <h1 className="text-3xl font-bold text-foreground text-center">
             IAL Bio U4 Exam Countdown
           </h1>
