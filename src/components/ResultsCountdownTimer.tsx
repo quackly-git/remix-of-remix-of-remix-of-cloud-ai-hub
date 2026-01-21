@@ -1,8 +1,11 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { Progress } from "@/components/ui/progress";
+import { Button } from "@/components/ui/button";
+import { Volume2, VolumeX } from "lucide-react";
 import rabbitClockGif from "@/assets/rabbit-clock.gif";
 import { ResultsTimerDisplaySettings } from "./ResultsSettingsModal";
 import { Session } from "@/hooks/useResultsSettings";
+import { useHeartbeatSound } from "@/hooks/useHeartbeatSound";
 
 interface ResultsCountdownTimerProps {
   resultsDate: Date;
@@ -15,6 +18,7 @@ export const ResultsCountdownTimer: React.FC<ResultsCountdownTimerProps> = ({
   session,
   displaySettings,
 }) => {
+  const [soundEnabled, setSoundEnabled] = useState(false);
   const [timeLeft, setTimeLeft] = useState({
     days: 0,
     hours: 0,
@@ -107,6 +111,19 @@ export const ResultsCountdownTimer: React.FC<ResultsCountdownTimerProps> = ({
     return 5; // Maximum panic!
   }, [progressData.progress]);
 
+  // Heartbeat sound hook
+  const { isPlaying, start, stop } = useHeartbeatSound(anxietyLevel, soundEnabled);
+
+  const toggleSound = () => {
+    if (soundEnabled) {
+      stop();
+      setSoundEnabled(false);
+    } else {
+      setSoundEnabled(true);
+      start();
+    }
+  };
+
   // Get animation style based on anxiety level
   const getAnxietyAnimation = () => {
     switch (anxietyLevel) {
@@ -131,7 +148,24 @@ export const ResultsCountdownTimer: React.FC<ResultsCountdownTimerProps> = ({
   };
 
   return (
-    <div className="flex flex-col items-center justify-center w-full">
+    <div className="relative flex flex-col items-center justify-center w-full">
+      {/* Sound Toggle Button */}
+      <div className="absolute top-4 left-4 z-20">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={toggleSound}
+          className={`transition-all ${soundEnabled ? "text-primary" : "text-muted-foreground"}`}
+          title={soundEnabled ? "Mute heartbeat" : "Play heartbeat sound"}
+        >
+          {soundEnabled ? (
+            <Volume2 className={`h-5 w-5 ${isPlaying ? "animate-pulse" : ""}`} />
+          ) : (
+            <VolumeX className="h-5 w-5" />
+          )}
+        </Button>
+      </div>
+
       {/* Main Rabbit Section */}
       <div className="relative mb-8">
         {/* Glowing ring behind rabbit - intensifies with anxiety */}
