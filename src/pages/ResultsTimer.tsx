@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { ArrowLeft, Settings, RotateCcw, Calendar, Maximize2 } from "lucide-react";
+import rabbitClockGif from "@/assets/rabbit-clock.gif";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { StarsBackground } from "@/components/ui/stars-background";
@@ -106,9 +107,21 @@ const ResultsTimer: React.FC = () => {
           )}
         </div>
 
-        <h1 className="text-3xl font-bold text-foreground text-center">
-          📊 Results Day Countdown
-        </h1>
+        <div className="flex items-center gap-3">
+          <img 
+            src={rabbitClockGif} 
+            alt="Anxious rabbit with clock" 
+            className="w-12 h-12 rounded-full"
+          />
+          <h1 className="text-3xl font-bold text-foreground text-center">
+            Results Day Countdown
+          </h1>
+          <img 
+            src={rabbitClockGif} 
+            alt="Anxious rabbit with clock" 
+            className="w-12 h-12 rounded-full"
+          />
+        </div>
       </div>
 
       {/* Session Selection Modal (First Visit) */}
