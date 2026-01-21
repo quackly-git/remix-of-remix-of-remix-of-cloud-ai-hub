@@ -31,30 +31,20 @@ export const FullscreenResultsCountdown: React.FC<FullscreenResultsCountdownProp
     return () => document.removeEventListener("keydown", handleEscape);
   }, [onExitFullscreen]);
 
-  useEffect(() => {
-    let timer: NodeJS.Timeout;
-    const handleMouseMove = () => {
-      setIsVisible(true);
-      clearTimeout(timer);
-      timer = setTimeout(() => setIsVisible(false), 3000);
-    };
-
-    document.addEventListener("mousemove", handleMouseMove);
-    timer = setTimeout(() => setIsVisible(false), 3000);
-
-    return () => {
-      document.removeEventListener("mousemove", handleMouseMove);
-      clearTimeout(timer);
-    };
-  }, []);
+  const handleMouseMove = () => {
+    setIsVisible(true);
+    const timer = setTimeout(() => setIsVisible(false), 3000);
+    return () => clearTimeout(timer);
+  };
 
   return (
     <div
-      className="fixed inset-0 z-50 bg-background"
+      className="fixed inset-0 z-50 cursor-none"
+      onMouseMove={handleMouseMove}
       style={{ backgroundColor: displaySettings.backgroundColor }}
     >
       <div
-        className={`absolute top-4 right-4 transition-opacity duration-300 z-20 ${
+        className={`absolute top-4 right-4 transition-opacity duration-300 ${
           isVisible ? "opacity-100" : "opacity-0"
         }`}
       >
@@ -62,14 +52,13 @@ export const FullscreenResultsCountdown: React.FC<FullscreenResultsCountdownProp
           variant="ghost"
           size="icon"
           onClick={onExitFullscreen}
-          className="text-foreground/80 hover:text-foreground hover:bg-foreground/10"
-          style={{ color: displaySettings.fontColor }}
+          className="text-white/80 hover:text-white hover:bg-white/10"
         >
           <X className="h-6 w-6" />
         </Button>
       </div>
 
-      <div className="h-full flex items-center justify-center p-8">
+      <div className="h-full flex items-center justify-center">
         <ResultsCountdownTimer
           resultsDate={resultsDate}
           session={session}
@@ -82,12 +71,7 @@ export const FullscreenResultsCountdown: React.FC<FullscreenResultsCountdownProp
           isVisible ? "opacity-100" : "opacity-0"
         }`}
       >
-        <p 
-          className="text-sm opacity-60"
-          style={{ color: displaySettings.fontColor }}
-        >
-          Press ESC to exit fullscreen
-        </p>
+        <p className="text-white/60 text-sm">Press ESC to exit fullscreen</p>
       </div>
     </div>
   );
