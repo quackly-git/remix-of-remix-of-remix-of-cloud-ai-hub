@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Progress } from "@/components/ui/progress";
 import rabbitClockGif from "@/assets/rabbit-clock.gif";
 import { ResultsTimerDisplaySettings } from "./ResultsSettingsModal";
@@ -96,21 +96,78 @@ export const ResultsCountdownTimer: React.FC<ResultsCountdownTimerProps> = ({
   if (displaySettings.showMinutes) timeUnits.push({ value: timeLeft.minutes, label: "Minutes" });
   if (displaySettings.showSeconds) timeUnits.push({ value: timeLeft.seconds, label: "Seconds" });
 
+  // Calculate anxiety level based on progress (0-100)
+  // Higher progress = closer to results = more anxiety
+  const anxietyLevel = useMemo(() => {
+    const progress = progressData.progress;
+    if (progress < 25) return 1; // Calm
+    if (progress < 50) return 2; // Slightly anxious
+    if (progress < 75) return 3; // Anxious
+    if (progress < 90) return 4; // Very anxious
+    return 5; // Maximum panic!
+  }, [progressData.progress]);
+
+  // Get animation style based on anxiety level
+  const getAnxietyAnimation = () => {
+    switch (anxietyLevel) {
+      case 1:
+        return "animate-[gentle-float_4s_ease-in-out_infinite]";
+      case 2:
+        return "animate-[wobble_2s_ease-in-out_infinite]";
+      case 3:
+        return "animate-[shake_1s_ease-in-out_infinite]";
+      case 4:
+        return "animate-[shake-intense_0.5s_ease-in-out_infinite]";
+      case 5:
+        return "animate-[panic_0.2s_ease-in-out_infinite]";
+      default:
+        return "";
+    }
+  };
+
+  const getGlowIntensity = () => {
+    const baseOpacity = 0.2 + (anxietyLevel * 0.15);
+    return `rgba(var(--primary), ${baseOpacity})`;
+  };
+
   return (
     <div className="flex flex-col items-center justify-center w-full">
       {/* Main Rabbit Section */}
       <div className="relative mb-8">
-        {/* Glowing ring behind rabbit */}
+        {/* Glowing ring behind rabbit - intensifies with anxiety */}
         <div className="absolute inset-0 flex items-center justify-center">
-          <div className="w-48 h-48 md:w-64 md:h-64 rounded-full bg-gradient-to-r from-primary/20 via-primary/40 to-primary/20 blur-xl animate-pulse" />
+          <div 
+            className={`w-48 h-48 md:w-64 md:h-64 rounded-full blur-xl transition-all duration-1000 ${
+              anxietyLevel >= 4 ? "animate-pulse" : ""
+            }`}
+            style={{
+              background: `radial-gradient(circle, hsl(var(--primary) / ${0.2 + anxietyLevel * 0.1}) 0%, hsl(var(--primary) / ${0.1 + anxietyLevel * 0.08}) 50%, transparent 70%)`,
+              transform: `scale(${1 + anxietyLevel * 0.1})`,
+            }}
+          />
         </div>
         
         {/* The anxious rabbit */}
         <img 
           src={rabbitClockGif} 
           alt="Anxious rabbit watching the clock" 
-          className="relative z-10 w-40 h-40 md:w-56 md:h-56 rounded-full border-4 border-primary/50 shadow-2xl shadow-primary/30"
+          className={`relative z-10 w-40 h-40 md:w-56 md:h-56 rounded-full border-4 shadow-2xl transition-all duration-500 ${getAnxietyAnimation()}`}
+          style={{
+            borderColor: `hsl(var(--primary) / ${0.3 + anxietyLevel * 0.15})`,
+            boxShadow: `0 0 ${20 + anxietyLevel * 10}px ${5 + anxietyLevel * 3}px hsl(var(--primary) / ${0.2 + anxietyLevel * 0.1})`,
+          }}
         />
+        
+        {/* Anxiety level indicator */}
+        <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 z-20">
+          <div className="bg-card/90 backdrop-blur-sm px-3 py-1 rounded-full border border-primary/30 text-xs font-medium">
+            {anxietyLevel === 1 && "😌 Calm"}
+            {anxietyLevel === 2 && "😐 Slightly nervous"}
+            {anxietyLevel === 3 && "😰 Getting anxious"}
+            {anxietyLevel === 4 && "😱 Very anxious!"}
+            {anxietyLevel === 5 && "🤯 MAXIMUM PANIC!"}
+          </div>
+        </div>
       </div>
 
       {/* Title */}
