@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Progress } from "@/components/ui/progress";
-import { FileText, Award, Clock } from "lucide-react";
+import rabbitClockGif from "@/assets/rabbit-clock.gif";
 import { ResultsTimerDisplaySettings } from "./ResultsSettingsModal";
 import { Session } from "@/hooks/useResultsSettings";
 
@@ -97,81 +97,114 @@ export const ResultsCountdownTimer: React.FC<ResultsCountdownTimerProps> = ({
   if (displaySettings.showSeconds) timeUnits.push({ value: timeLeft.seconds, label: "Seconds" });
 
   return (
-    <div
-      className="flex flex-col items-center justify-center min-h-[50vh] rounded-2xl p-8 transition-all duration-300"
-      style={{
-        backgroundColor: displaySettings.backgroundColor,
-        color: displaySettings.fontColor,
-        fontFamily: displaySettings.fontFamily,
-      }}
-    >
-      <div className="flex items-center gap-3 mb-6">
-        <FileText className="h-8 w-8" />
-        <h2 className="text-2xl md:text-3xl font-bold text-center">
-          Results Day Countdown
-        </h2>
-        <Award className="h-8 w-8" />
+    <div className="flex flex-col items-center justify-center w-full">
+      {/* Main Rabbit Section */}
+      <div className="relative mb-8">
+        {/* Glowing ring behind rabbit */}
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="w-48 h-48 md:w-64 md:h-64 rounded-full bg-gradient-to-r from-primary/20 via-primary/40 to-primary/20 blur-xl animate-pulse" />
+        </div>
+        
+        {/* The anxious rabbit */}
+        <img 
+          src={rabbitClockGif} 
+          alt="Anxious rabbit watching the clock" 
+          className="relative z-10 w-40 h-40 md:w-56 md:h-56 rounded-full border-4 border-primary/50 shadow-2xl shadow-primary/30"
+        />
       </div>
 
-      <p className="opacity-80 mb-6 text-center">
+      {/* Title */}
+      <h2 
+        className="text-2xl md:text-4xl font-bold text-center mb-2"
+        style={{ 
+          color: displaySettings.fontColor,
+          fontFamily: displaySettings.fontFamily 
+        }}
+      >
+        {isResultsDay ? "🎉 Results Day! 🎉" : "Waiting for Results..."}
+      </h2>
+
+      <p 
+        className="text-lg md:text-xl opacity-70 mb-6 text-center"
+        style={{ color: displaySettings.fontColor }}
+      >
         {session === "oct2025" ? "October 2025" : "January 2026"} Session
       </p>
 
-      {/* Progress Bar */}
-      {displaySettings.showProgressBar && (
-        <div className="w-full max-w-lg mb-8">
-          <div className="flex items-center gap-2 mb-2">
-            <Clock className="h-4 w-4" />
-            <span className="text-sm">Waiting for results...</span>
-          </div>
-          <Progress value={progressData.progress} className="h-3 bg-white/20" />
-          <p className="text-center text-sm mt-2 opacity-70">
-            {Math.round(progressData.progress)}% of wait time passed
-          </p>
-        </div>
-      )}
-
+      {/* Countdown Timer */}
       {!isResultsDay ? (
-        <div className="flex flex-wrap justify-center gap-4 md:gap-6">
-          {timeUnits.map((unit) => (
-            <div key={unit.label} className="flex flex-col items-center">
-              <div 
-                className="bg-white/20 backdrop-blur-sm rounded-xl p-4 md:p-6 min-w-[70px] md:min-w-[100px] text-center border border-white/30"
-              >
-                <span 
-                  className="font-bold"
-                  style={{ fontSize: `${displaySettings.fontSize}px` }}
+        <div className="flex flex-wrap justify-center gap-3 md:gap-6 mb-8">
+          {timeUnits.map((unit, index) => (
+            <React.Fragment key={unit.label}>
+              <div className="flex flex-col items-center">
+                <div 
+                  className="bg-card/80 backdrop-blur-md rounded-2xl p-4 md:p-6 min-w-[70px] md:min-w-[100px] text-center border border-primary/30 shadow-lg"
                 >
-                  {formatNumber(unit.value)}
-                </span>
+                  <span 
+                    className="font-bold text-primary"
+                    style={{ 
+                      fontSize: `${displaySettings.fontSize}px`,
+                      fontFamily: displaySettings.fontFamily 
+                    }}
+                  >
+                    {formatNumber(unit.value)}
+                  </span>
+                </div>
+                <p 
+                  className="mt-2 text-sm md:text-base font-medium opacity-70"
+                  style={{ color: displaySettings.fontColor }}
+                >
+                  {unit.label}
+                </p>
               </div>
-              <p className="mt-2 text-sm md:text-base opacity-80 font-medium">
-                {unit.label}
-              </p>
-            </div>
+              {index < timeUnits.length - 1 && (
+                <span 
+                  className="hidden md:flex items-center text-4xl font-bold opacity-50 -mt-6"
+                  style={{ color: displaySettings.fontColor }}
+                >
+                  :
+                </span>
+              )}
+            </React.Fragment>
           ))}
         </div>
       ) : (
-        <div className="text-center animate-pulse">
+        <div className="text-center mb-8">
           <p 
-            className="font-bold mb-2"
-            style={{ fontSize: `${displaySettings.fontSize}px` }}
+            className="text-2xl md:text-4xl font-bold animate-bounce"
+            style={{ 
+              color: displaySettings.fontColor,
+              fontFamily: displaySettings.fontFamily 
+            }}
           >
-            🎉 Results Day! 🎉
-          </p>
-          <p className="text-lg opacity-80">
             Check your results now!
           </p>
         </div>
       )}
 
-      <p className="mt-8 opacity-60 text-sm">
-        Results expected: {resultsDate.toLocaleDateString("en-GB", {
+      {/* Progress Bar */}
+      {displaySettings.showProgressBar && (
+        <div className="w-full max-w-md mb-6">
+          <div className="flex items-center justify-between mb-2 text-sm" style={{ color: displaySettings.fontColor }}>
+            <span className="opacity-60">Exams done</span>
+            <span className="font-semibold">{Math.round(progressData.progress)}%</span>
+            <span className="opacity-60">Results day</span>
+          </div>
+          <Progress value={progressData.progress} className="h-3 bg-muted/30" />
+        </div>
+      )}
+
+      {/* Results Date */}
+      <p 
+        className="text-sm opacity-50"
+        style={{ color: displaySettings.fontColor }}
+      >
+        Expected: {resultsDate.toLocaleDateString("en-GB", {
           weekday: "long",
           day: "numeric",
           month: "long",
           year: "numeric",
-        })}
+        })} at 9:00 AM
       </p>
     </div>
   );
